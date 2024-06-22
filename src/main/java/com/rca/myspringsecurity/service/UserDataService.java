@@ -1,5 +1,6 @@
 package com.rca.myspringsecurity.service;
 
+import com.rca.myspringsecurity.error.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -29,14 +30,39 @@ public class UserDataService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found " +
                         username));
     }
+
     public String addUser(UserData userData) {
-        userData.setPassword(encoder.encode(userData.getPassword()));
+        String password = userData.getPassword();
+        String email = userData.getEmail();
+
+        if (email == null || !email.contains("@") || !email.endsWith(".com")) {
+            throw new CustomException("Email must be a valid email address");
+        }
+
+        if (password == null || password.length() < 8) {
+            throw new CustomException("Password must be at least 8 characters long");
+        }
+
+        if (!password.matches(".*\\d.*")) {
+            throw new CustomException("Password must contain at least one number");
+        }
+
+        if (!password.matches(".*\\W.*")) {
+            throw new CustomException("Password must contain at least one special character");
+        }
+
+        userData.setPassword(encoder.encode(password));
         repository.save(userData);
         return "User Added Successfully";
     }
     public List<UserData> listAll() {
         return repository.findAll();
     }
+    public UserData getUserById(Integer id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new CustomException("User not found with id: " + id));
+    }
+
 }
 
 

@@ -1,17 +1,24 @@
 package com.rca.myspringsecurity.controller;
 
+import com.rca.myspringsecurity.dto.CreateUserDTO;
 import com.rca.myspringsecurity.entity.AuthRequest;
 import com.rca.myspringsecurity.entity.UserData;
 import com.rca.myspringsecurity.service.JwtService;
 import com.rca.myspringsecurity.service.UserDataService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -27,8 +34,14 @@ public class UserController {
     public String welcome() {
         return "Welcome this endpoint is not secure";
     }
+
     @PostMapping("/addNewUser")
-    public String addNewUser(@RequestBody UserData userData) {
+    public String addNewUser(@RequestBody @Valid CreateUserDTO userDTO) {
+        UserData userData = new UserData();
+        userData.setName(userDTO.getName());
+        userData.setEmail(userDTO.getEmail());
+        userData.setPassword(userDTO.getPassword());
+        userData.setRoles(userDTO.getRoles());
         return service.addUser(userData);
     }
     @GetMapping("/user/userProfile")
@@ -54,6 +67,21 @@ public class UserController {
         } else {
             throw new UsernameNotFoundException("invalid user request !");
         }
+    }
+    @GetMapping("/user/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public UserData getUserById(@PathVariable Integer id) {
+        return service.getUserById(id);
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        var errors = new HashMap<String, String>();
+        exception.getBindingResult().getAllErrors().forEach((error) -> {
+            var fieldName = ((FieldError) error).getField();
+            var errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 }
 

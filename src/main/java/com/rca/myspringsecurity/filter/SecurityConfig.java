@@ -31,7 +31,20 @@ public class SecurityConfig {
     @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
             return http.csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth.requestMatchers("/users/welcome", "/users/addNewUser", "/users/generateToken","/academics/**").permitAll())
+                    .authorizeHttpRequests(auth -> auth.requestMatchers(
+                            "/users/welcome",
+                            "/users/addNewUser",
+                            "/users/generateToken",
+                            "/academics/**",
+                            "/laptops/registration",
+                            "/swagger-resources/**",
+                            "/configuration/ui",
+                            "/configuration/security",
+                            "/swagger-ui/**",
+                            "/webjars/**",
+                            "/swagger-ui.html",
+                            "/v3/api-docs/**"
+                            ).permitAll())
                     .authorizeHttpRequests(auth -> auth.requestMatchers("/users/user/**").authenticated())
                     .authorizeHttpRequests(auth -> auth.requestMatchers("/users/admin/**").authenticated())
                     .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -1,4 +1,5 @@
 package com.rca.myspringsecurity.controller;
+import com.rca.myspringsecurity.dto.CreateStudentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +24,7 @@ public class StudentController {
     private JwtService jwtService;
     @PostMapping("/registration")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public void addStudent(@RequestBody Student student,HttpServletRequest request) {
+    public void addStudent(@RequestBody CreateStudentDTO student, HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
@@ -32,8 +33,12 @@ public class StudentController {
             username = jwtService.extractUsername(token);
         }
         UserData info=userServices.loadCurrentUser(username);
-        student.setCreated(info);
-        studentService.addStudent(student);
+        Student student1 = new Student();
+        student1.setFirstName(student.getFirstName());
+        student1.setLastName(student.getLastName());
+        student1.setEmail(student.getEmail());
+        student1.setCreated(info);
+        studentService.addStudent(student1);
     }
     @GetMapping("/info")
     public String info() {
