@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.rca.myspringsecurity.entity.UserData;
 import com.rca.myspringsecurity.repository.UserDataRepository;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 @Service
 public class UserDataService implements UserDetailsService {
@@ -34,6 +35,7 @@ public class UserDataService implements UserDetailsService {
     public String addUser(UserData userData) {
         String password = userData.getPassword();
         String email = userData.getEmail();
+        String roles=userData.getRoles();
 
         if (email == null || !email.contains("@") || !email.endsWith(".com")) {
             throw new CustomException("Email must be a valid email address");
@@ -41,6 +43,9 @@ public class UserDataService implements UserDetailsService {
 
         if (password == null || password.length() < 8) {
             throw new CustomException("Password must be at least 8 characters long");
+        }
+        if(!Objects.equals(roles, "ROLE_USER") && !Objects.equals(roles, "ROLE_ADMIN") && !Objects.equals(roles, "ROLE_MANAGER")){
+            throw new CustomException("Roles must be either ROLE_USER, ROLE_ADMIN or ROLE_MANAGER");
         }
 
         if (!password.matches(".*\\d.*")) {
