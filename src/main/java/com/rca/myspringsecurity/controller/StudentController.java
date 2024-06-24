@@ -1,7 +1,10 @@
 package com.rca.myspringsecurity.controller;
 import com.rca.myspringsecurity.dto.CreateStudentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,6 +36,7 @@ public class StudentController {
             username = jwtService.extractUsername(token);
         }
         UserData info=userServices.loadCurrentUser(username);
+        checkAuthority("ROLE_ADMIN");
         Student student1 = new Student();
         student1.setFirstName(student.getFirstName());
         student1.setLastName(student.getLastName());
@@ -40,7 +44,14 @@ public class StudentController {
         student1.setCreated(info);
         studentService.addStudent(student1);
     }
+    private void checkAuthority(String role) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(role))) {
+            throw new AccessDeniedException("You do not have permission to perform this action");
+        }
+    }
     @GetMapping("/info")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String info() {
         return "Amazing day";
     }

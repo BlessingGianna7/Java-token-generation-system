@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
 public class CreateUserDTO {
-    @Pattern(regexp="^[A-Za-z]*$", message = "Invalid Input")
+    @Pattern(regexp="^[A-Za-z ]*$", message = "Invalid Input")
     @NotEmpty(message = "Name is required!")
     private String name;
     @NotEmpty(message = "Email is required!")

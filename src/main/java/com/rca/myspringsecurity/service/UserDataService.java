@@ -1,14 +1,15 @@
 package com.rca.myspringsecurity.service;
 
+import com.rca.myspringsecurity.entity.UserData;
 import com.rca.myspringsecurity.error.CustomException;
+import com.rca.myspringsecurity.repository.UserDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.rca.myspringsecurity.entity.UserData;
-import com.rca.myspringsecurity.repository.UserDataRepository;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,13 +41,17 @@ public class UserDataService implements UserDetailsService {
         if (email == null || !email.contains("@") || !email.endsWith(".com")) {
             throw new CustomException("Email must be a valid email address");
         }
-
+        String[] roleArray = roles.split(",");
+        for (String role : roleArray) {
+            role = role.trim(); // remove leading and trailing spaces
+            if (!role.equals("ROLE_USER") && !role.equals("ROLE_ADMIN") && !role.equals("ROLE_MANAGER")) {
+                throw new CustomException("Invalid role: " + role + ". Roles must be either ROLE_USER, ROLE_ADMIN or ROLE_MANAGER");
+            }
+        }
         if (password == null || password.length() < 8) {
             throw new CustomException("Password must be at least 8 characters long");
         }
-        if(!Objects.equals(roles, "ROLE_USER") && !Objects.equals(roles, "ROLE_ADMIN") && !Objects.equals(roles, "ROLE_MANAGER")){
-            throw new CustomException("Roles must be either ROLE_USER, ROLE_ADMIN or ROLE_MANAGER");
-        }
+
 
         if (!password.matches(".*\\d.*")) {
             throw new CustomException("Password must contain at least one number");
