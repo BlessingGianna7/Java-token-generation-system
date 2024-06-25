@@ -10,6 +10,7 @@ import com.rca.myspringsecurity.service.LaptopService;
 import com.rca.myspringsecurity.service.StudentService;
 import com.rca.myspringsecurity.service.UserDataService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,24 +32,24 @@ public class LaptopController {
 
     @PostMapping("/registration")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public void addLaptop(@RequestBody CreateLaptopDTO dto, HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
-        if (authHeader != null && authHeader.startsWith("Bearer")) {
-            token = authHeader.substring(7);
-            username = jwtService.extractUsername(token);
-        }
-        UserData info = userDataService.loadCurrentUser(username);
-        Student student = studentService.getStudentById(dto.getStudentId()).orElseThrow(() -> new UsernameNotFoundException("Student not found"));
-        Laptop laptop = new Laptop();
-        laptop.setSn(dto.getSn());
-        laptop.setBrand(dto.getBrand());
-        laptop.setStudent(student);
-        laptopService.addLaptop(laptop);
+    public String addLaptop(@RequestBody @Valid CreateLaptopDTO dto) {
+
+      try {
+
+          Student student = studentService.getStudentById(dto.getStudentId()).orElseThrow(() -> new UsernameNotFoundException("Student not found"));
+          Laptop laptop = new Laptop();
+          laptop.setSn(dto.getSn());
+          laptop.setBrand(dto.getBrand());
+          laptop.setStudent(student);
+          laptopService.addLaptop(laptop);
+          return "Laptop added successfully";
+      }catch (Exception e){
+          return e.getMessage();
+      }
     }
 
     @GetMapping("/info")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String info() {
         return "Amazing day";
     }

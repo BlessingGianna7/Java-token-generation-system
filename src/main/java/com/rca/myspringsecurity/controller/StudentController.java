@@ -36,7 +36,6 @@ public class StudentController {
             username = jwtService.extractUsername(token);
         }
         UserData info=userServices.loadCurrentUser(username);
-        checkAuthority("ROLE_ADMIN");
         Student student1 = new Student();
         student1.setFirstName(student.getFirstName());
         student1.setLastName(student.getLastName());
@@ -53,7 +52,14 @@ public class StudentController {
     @GetMapping("/info")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String info() {
+        try{
         return "Amazing day";
+
+        }
+        catch (Exception e){
+            System.out.println("AN ERROR OCCURED");
+            return "Error";
+        }
     }
 }
 
